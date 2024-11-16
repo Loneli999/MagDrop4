@@ -57,14 +57,14 @@ def evaluate_window(window, piece):
     score = 0
 
     if window.count(piece) == 4:
-        score += 100
+        score += 100  # Winning
     elif window.count(piece) == 3 and window.count(0) == 1:
-        score += 5
+        score += 10  # Strong threat
     elif window.count(piece) == 2 and window.count(0) == 2:
-        score += 2
+        score += 5   # Potential threat
 
     if window.count(opponent_piece) == 3 and window.count(0) == 1:
-        score -= 4
+        score -= 15  # Block opponent's strong threat
 
     return score
 
@@ -72,23 +72,27 @@ def score_position(board, piece):
     """Scores the entire board for a given piece."""
     score = 0
     center_array = [board[row, COLS // 2] for row in range(ROWS)]
-    score += center_array.count(piece) * 3
+    score += center_array.count(piece) * 6  # Encourage central play
 
+    # Horizontal
     for row in range(ROWS):
         for col in range(COLS - 3):
             window = [board[row, col + i] for i in range(4)]
             score += evaluate_window(window, piece)
 
+    # Vertical
     for row in range(ROWS - 3):
         for col in range(COLS):
             window = [board[row + i, col] for i in range(4)]
             score += evaluate_window(window, piece)
 
+    # Positive Diagonal
     for row in range(ROWS - 3):
         for col in range(COLS - 3):
             window = [board[row + i, col + i] for i in range(4)]
             score += evaluate_window(window, piece)
 
+    # Negative Diagonal
     for row in range(3, ROWS):
         for col in range(COLS - 3):
             window = [board[row - i, col + i] for i in range(4)]
@@ -169,56 +173,47 @@ def clear_screen():
 def play_game():
     board = create_board()
     game_over = False
+    turn = 0  # Keep track of whose turn it is (Player 1 or Player 2)
 
     while not game_over:
         clear_screen()
         print("Connect4 Game!")
         print(board)
 
-        # Player 2 (Human) turn
-        valid_move = False
-        while not valid_move:
-            try:
-                col = int(input("Player 2 (Human), enter your move (0-6): "))
-                if is_valid_move(board, col):
-                    valid_move = True
-                else:
-                    print("Invalid move. Try again.")
-            except ValueError:
-                print("Invalid input. Please enter a number between 0 and 6.")
-        
-        row = get_next_open_row(board, col)
-        drop_piece(board, row, col, 2)
+        if turn % 2 == 0:  # Player 1 (Computer)
+            print("Player 1 (Computer) is thinking...")
+            start_time = time.time()
+            col = get_best_move(board, depth=4)
+            computation_time = time.time() - start_time
+            row = get_next_open_row(board, col)
+            drop_piece(board, row, col, 1)
+            print(f"Player 1 (Computer) played in Column {col}")
+            print(f"Computation Time: {computation_time:.4f} seconds")
+            print(f"Positions Evaluated: {operations_count}")
+        else:  # Player 2 (Computer)
+            print("Player 2 (Computer) is thinking...")
+            start_time = time.time()
+            col = get_best_move(board, depth=4)
+            computation_time = time.time() - start_time
+            row = get_next_open_row(board, col)
+            drop_piece(board, row, col, 2)
+            print(f"Player 2 (Computer) played in Column {col}")
+            print(f"Computation Time: {computation_time:.4f} seconds")
+            print(f"Positions Evaluated: {operations_count}")
 
-        if is_winning_move(board, 2):
-            clear_screen()
-            print(board)
-            print("Player 2 (Human) wins!")
-            game_over = True
-            continue
-
-        # Player 1 (Computer) turn
-        clear_screen()
-        print("Player 1 (Computer) is thinking...")
-        start_time = time.time()
-        col = get_best_move(board, depth=4)
-        computation_time = time.time() - start_time
-
-        row = get_next_open_row(board, col)
-        drop_piece(board, row, col, 1)
-
+        # Check for win
         if is_winning_move(board, 1):
             clear_screen()
             print(board)
             print("Player 1 (Computer) wins!")
             game_over = True
             continue
-
-        # Show metrics and wait for input
-        print(f"Computer's move: Column {col}")
-        print(f"Computation Time: {computation_time:.4f} seconds")
-        print(f"Positions Evaluated: {operations_count}")
-        input("Press Enter to continue...")
+        elif is_winning_move(board, 2):
+            clear_screen()
+            print(board)
+            print("Player 2 (Computer) wins!")
+            game_over = True
+            continue
 
         # Check for draw
         if len(get_valid_moves(board)) == 0:
@@ -226,6 +221,10 @@ def play_game():
             print(board)
             print("It's a draw!")
             game_over = True
+            continue
+
+        turn += 1  # Switch turns
+        input("Press Enter to continue...")  # Pause to view each turn's result
 
 if __name__ == "__main__":
     play_game()
