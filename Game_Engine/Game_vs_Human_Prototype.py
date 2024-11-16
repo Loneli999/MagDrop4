@@ -1,8 +1,12 @@
 import numpy as np
 import os
+import time
 
 ROWS = 6
 COLS = 7
+
+# Global variable to count operations during the computer's turn
+operations_count = 0
 
 # Helper functions
 def create_board():
@@ -101,10 +105,12 @@ def is_terminal_node(board):
     return is_winning_move(board, 1) or is_winning_move(board, 2) or len(get_valid_moves(board)) == 0
 
 def alpha_beta_pruning(board, depth, alpha, beta, maximizing_player):
+    global operations_count
     valid_moves = get_valid_moves(board)
     is_terminal = is_terminal_node(board)
 
     if depth == 0 or is_terminal:
+        operations_count += 1  # Increment for terminal evaluations
         if is_terminal:
             if is_winning_move(board, 1):
                 return None, 100000
@@ -122,6 +128,7 @@ def alpha_beta_pruning(board, depth, alpha, beta, maximizing_player):
             row = get_next_open_row(board, col)
             temp_board = board.copy()
             drop_piece(temp_board, row, col, 1)
+            operations_count += 1  # Increment for each branch evaluation
             new_score = alpha_beta_pruning(temp_board, depth - 1, alpha, beta, False)[1]
             if new_score > value:
                 value = new_score
@@ -137,6 +144,7 @@ def alpha_beta_pruning(board, depth, alpha, beta, maximizing_player):
             row = get_next_open_row(board, col)
             temp_board = board.copy()
             drop_piece(temp_board, row, col, 2)
+            operations_count += 1  # Increment for each branch evaluation
             new_score = alpha_beta_pruning(temp_board, depth - 1, alpha, beta, True)[1]
             if new_score < value:
                 value = new_score
@@ -147,6 +155,9 @@ def alpha_beta_pruning(board, depth, alpha, beta, maximizing_player):
         return best_col, value
 
 def get_best_move(board, depth=4):
+    """Gets the best move for Player 1 using Alpha-Beta Pruning."""
+    global operations_count
+    operations_count = 0  # Reset operations count
     col, _ = alpha_beta_pruning(board, depth, -float('inf'), float('inf'), True)
     return col
 
@@ -189,7 +200,10 @@ def play_game():
         # Player 1 (Computer) turn
         clear_screen()
         print("Player 1 (Computer) is thinking...")
+        start_time = time.time()
         col = get_best_move(board, depth=4)
+        computation_time = time.time() - start_time
+
         row = get_next_open_row(board, col)
         drop_piece(board, row, col, 1)
 
@@ -199,6 +213,12 @@ def play_game():
             print("Player 1 (Computer) wins!")
             game_over = True
             continue
+
+        # Show metrics and wait for input
+        print(f"Computer's move: Column {col}")
+        print(f"Computation Time: {computation_time:.4f} seconds")
+        print(f"Positions Evaluated: {operations_count}")
+        input("Press Enter to continue...")
 
         # Check for draw
         if len(get_valid_moves(board)) == 0:
