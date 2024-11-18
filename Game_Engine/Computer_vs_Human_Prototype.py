@@ -176,9 +176,9 @@ def play_game():
 
     while not game_over:
         clear_screen()
-        #print(board)
-        #print("  -------------")
-        #print(" " + str(np.array([0, 1, 2, 3, 4, 5, 6])))
+        print(board)
+        print("  -------------")
+        print(" " + str(np.array([0, 1, 2, 3, 4, 5, 6])))
 
         # Player 2 (Human) turn
         valid_move = False
