@@ -176,9 +176,9 @@ def play_game():
 
     while not game_over:
         clear_screen()
-        print(board)
-        print("  -------------")
-        print(" " + str(np.array([0, 1, 2, 3, 4, 5, 6])))
+        #print(board)
+        #print("  -------------")
+        #print(" " + str(np.array([0, 1, 2, 3, 4, 5, 6])))
 
         # Player 2 (Human) turn
         valid_move = False
@@ -202,10 +202,10 @@ def play_game():
             game_over = True
             continue
 
-        # Player 1 (Computer) turn
+         # Player 1 (Computer) turn
         print("Player 1 (Computer) is thinking...")
         start_time = time.time()
-        col = get_best_move(board, depth=2)
+        col = get_best_move(board, depth=3)
         computation_time = time.time() - start_time
 
         row = get_next_open_row(board, col)
@@ -219,10 +219,10 @@ def play_game():
             continue
 
         # Show metrics and wait for input
-        print(f"Computer's move: Column {col}")
-        print(f"Computation Time: {computation_time:.4f} seconds")
-        print(f"Positions Evaluated: {operations_count}")
-        input("Press Enter to continue...")
+        # print(f"Computer's move: Column {col}")
+        # print(f"Computation Time: {computation_time:.4f} seconds")
+        # print(f"Positions Evaluated: {operations_count}")
+        # input("Press Enter to continue...")
 
         # Check for draw
         if len(get_valid_moves(board)) == 0:
