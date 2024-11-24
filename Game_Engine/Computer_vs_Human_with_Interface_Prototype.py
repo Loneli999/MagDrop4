@@ -189,11 +189,11 @@ def display_connect4_interactive(board, handle_click):
                 ax.add_patch(rect)
                 
                 # Draw pieces
-                piece_color = 'white'
+                piece_color = 'grey'
                 if board[row, col] == 1:
-                    piece_color = 'red'
+                    piece_color = 'black'
                 elif board[row, col] == 2:
-                    piece_color = 'yellow'
+                    piece_color = 'white'
                 circle = patches.Circle((col + 0.5, rows - row - 0.5), 0.4, color=piece_color)
                 ax.add_patch(circle)
         ax.set_xlim(0, cols)
