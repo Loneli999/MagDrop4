@@ -191,9 +191,9 @@ def display_connect4_interactive(board, handle_click):
                 # Draw pieces
                 piece_color = 'grey'
                 if board[row, col] == 1:
-                    piece_color = 'black'
+                    piece_color = 'red'
                 elif board[row, col] == 2:
-                    piece_color = 'white'
+                    piece_color = 'yellow'
                 circle = patches.Circle((col + 0.5, rows - row - 0.5), 0.4, color=piece_color)
                 ax.add_patch(circle)
         ax.set_xlim(0, cols)
@@ -249,7 +249,7 @@ def play_game():
         # Player 1 (Computer) turn
         print("Player 1 (Computer) is thinking...")
         start_time = time.time()
-        col = get_best_move(board, depth=3)
+        col = get_best_move(board, depth=4)
         computation_time = time.time() - start_time
 
         row = get_next_open_row(board, col)
