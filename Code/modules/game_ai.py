@@ -17,6 +17,13 @@ def get_next_open_row(board, col):
 def drop_piece(board, row, col, piece):
     board[row, col] = piece
 
+def get_full_columns(board):
+    full_columns = []
+    for col in range(COLS):
+        if not is_valid_move(board, col):  # If the column is not a valid move, it's full
+            full_columns.append(col)
+    return full_columns
+
 def is_winning_move(board, piece):
     for row in range(ROWS):
         for col in range(COLS - 3):

@@ -8,6 +8,7 @@ from modules.game_ai import (
     create_board,
     drop_piece,
     is_valid_move,
+    get_full_columns,
     get_valid_moves,
     get_next_open_row,
     is_winning_move,
@@ -50,7 +51,7 @@ class MagDropFSM:
 
     def idle(self):
         print("Red to reload")
-        print("Blue to continue")
+        print("Blue to start")
 
         # Waiting for button press
         while True:
@@ -109,10 +110,13 @@ class MagDropFSM:
 
     def human_move(self):
         print("Waiting for")
-        print("your Move")
+        print("your move")
+
+        full_columns = get_full_columns(self.board)
+        ignore_sensors = [col + 1 for col in full_columns]
 
         while True:
-            self.human_col = read_ir_sensors()
+            self.human_col = read_ir_sensors(ignore_sensors)
 
             if self.human_col is not None:
                 print(f"IR Sensor {self.human_col} triggered")

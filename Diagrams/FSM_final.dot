@@ -1,0 +1,76 @@
+digraph MagDropFSM {
+    node [shape=rectangle style=rounded];
+
+    Idle [
+        shape=rectangle
+        style=rounded
+        label=<
+            <table border="0" cellborder="0" cellspacing="0">
+                <tr><td align="center"><font point-size="20"><b>Idle</b></font></td></tr>
+                <tr><td align="left">display_line1 = "Red to reload"</td></tr>
+                <tr><td align="left">display_line2 = "Blue to start"</td></tr>
+            </table>
+        >
+    ];
+    Reloading [
+        shape=rectangle
+        style=rounded
+        label=<
+            <table border="0" cellborder="0" cellspacing="0">
+                <tr><td align="center"><font point-size="20"><b>Reloading</b></font></td></tr>
+                <tr><td align="left">move_gantry("mag", "reload")</td></tr>
+                <tr><td align="left">display_line1 = "Press any Button"</td></tr>
+                <tr><td align="left">display_line2 = "to continue"</td></tr>
+            </table>
+        >
+    ];
+    DifficultySelection [
+        shape=rectangle
+        style=rounded
+        label=<
+            <table border="0" cellborder="0" cellspacing="0">
+                <tr><td align="center"><font point-size="20"><b>Difficulty Selection</b></font></td></tr>
+                <tr><td align="left">if level &gt; 4:</td></tr>
+                <tr><td align="left">    level = 1</td></tr>
+                <tr><td align="left">display_line1 = "Selected Diff:"</td></tr>
+                <tr><td align="left">display_line2 = "Level: {level}"</td></tr>
+            </table>
+        >
+    ];
+    HumanMove [
+        shape=rectangle
+        style=rounded
+        label=<
+            <table border="0" cellborder="0" cellspacing="0">
+                <tr><td align="center"><font point-size="20"><b>Human Move</b></font></td></tr>
+                <tr><td align="left">display_line1 = "Waiting for"</td></tr>
+                <tr><td align="left">display_line2 = "your move"</td></tr>
+                <tr><td align="left">human_col = read_ir_sensors()</td></tr>
+                <tr><td align="left">update_board()</td></tr>
+            </table>
+        >
+    ];
+    GameAI [label="Game AI"];
+    AIMove [label="AI Move"];
+    GameEnd [label="Game End"];
+
+    # Transitions
+    Idle -> DifficultySelection [label="red_button/"];
+    Idle -> Reloading [label="blue_button/"];
+    
+    Reloading -> DifficultySelection [label="red_button || blue_button / move_gantry(\"reload\", \"mag\")"];
+    
+    DifficultySelection -> HumanMove [label="blue_button/"];
+    DifficultySelection -> DifficultySelection [label="red_button / level:=level+1"];
+
+    HumanMove -> GameAI [label="is_valid_move()/"];
+    HumanMove -> GameEnd [label="is_winning_move(board)/"];
+
+    GameAI -> AIMove [label="AI Move Selected/"];
+    GameAI -> GameEnd [label="AI Wins or Draw/"];
+
+    AIMove -> HumanMove [label="AI Move Complete/"];
+    AIMove -> GameEnd [label="AI Wins or Draw/"];
+
+    GameEnd -> Idle [label="Button Press/"];
+}
