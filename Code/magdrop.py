@@ -2,8 +2,10 @@ import time
 from modules.button_reader import read_buttons
 from modules.ir_sensor_reader import read_ir_sensors
 from modules.limit_switch_reader import read_limit_switches
-from modules.stepper_motor import move_motor
+from modules.stepper_motor import move_motor, motor_off
 from modules.gantry_cart import move_gantry
+from modules.electromagnet import control_electromagnet
+from modules.lcd_display import display
 from modules.game_ai import (
     create_board,
     drop_piece,
@@ -27,6 +29,11 @@ class MagDropFSM:
         self.draw = False
         self.human_won = False
         self.ai_won = False
+        self.ingame = False
+        self.count = 0
+        control_electromagnet(False)
+        motor_off()
+        display(" ", " ")
 
     def run(self):
         """
@@ -35,6 +42,8 @@ class MagDropFSM:
         while True:
             if self.state == "idle":
                 self.idle()
+            elif self.state == "reloading":
+                self.reloading()
             elif self.state == "difficulty_selection":
                 self.difficulty_selection()
             elif self.state == "human_move":
@@ -50,45 +59,53 @@ class MagDropFSM:
                 break
 
     def idle(self):
-        print("Red to reload")
-        print("Blue to start")
+        display("Red to reload", "Blue to start")
+        self.board = create_board()
 
         # Waiting for button press
         while True:
             red_button, blue_button = read_buttons()
             if red_button:
-                self.state = "difficulty_selection"
+                self.state = "reloading"
+                time.sleep(0.5) # Debounce
                 break
             
             if blue_button:
-                self.state = "reloading"
+                self.state = "difficulty_selection"
                 break
 
     def reloading(self):
-        print("clear display")
+        display("", "")
 
         move_gantry("mag", "reload")
 
-        print("Press any Button")
-        print("to continue")
+        if self.count == 0:
+            discs = 7
+        else: 
+            discs = self.count
+        
+        display(f"Reload {discs} Discs!", "Btn to continue!")
 
         while True:
             red_button, blue_button = read_buttons()
             if red_button or blue_button:
                 break
+            
+        self.count = 0
 
         move_gantry("reload", "mag")
 
-        self.state = "difficulty_selection"
+        if self.ingame:
+            self.state = "human_move"
+        else:
+            self.state = "difficulty_selection"
 
     def difficulty_selection(self):
-        print("Difficuly")
-        print("Selection")
+        display("Difficulty", "Selection")
 
-        time.sleep(3)
+        time.sleep(2)
 
-        print("Press Red: Change")
-        print("Press Blue: Start")
+        display("Press Red:Change", "Press Blue:Start")
 
         while True:
             red_button, blue_button = read_buttons()
@@ -97,9 +114,7 @@ class MagDropFSM:
                 if self.level > 4:
                     self.level = 1
 
-                print("Selected Diff:")
-                print(f'Level: {self.level}')
-
+                display("Selected Diff:", f"Level: {self.level}")
 
                 time.sleep(0.5) # Debounce
 
@@ -109,8 +124,9 @@ class MagDropFSM:
         self.state = "human_move"
 
     def human_move(self):
-        print("Waiting for")
-        print("your move")
+        display("Waiting for", "your move")
+
+        self.ingame = True
 
         full_columns = get_full_columns(self.board)
         ignore_sensors = [col + 1 for col in full_columns]
@@ -119,7 +135,7 @@ class MagDropFSM:
             self.human_col = read_ir_sensors(ignore_sensors)
 
             if self.human_col is not None:
-                print(f"IR Sensor {self.human_col} triggered")
+                display(f"Col {self.human_col} triggered", "Ai is computing")
                 if is_valid_move(self.board, self.human_col - 1):
                     row = get_next_open_row(self.board, self.human_col - 1)
                     drop_piece(self.board, row, self.human_col - 1, 2)
@@ -132,12 +148,14 @@ class MagDropFSM:
         self.state = "game_ai"
 
     def game_ai(self):
-        print(self.board)
         self.ai_col = get_best_move(self.board, depth=self.level)
+        print(self.ai_col)
 
         if self.ai_col is not None:
             row = get_next_open_row(self.board, self.ai_col)
             drop_piece(self.board, row, self.ai_col, 1)
+        
+        print(self.board)
 
         if is_winning_move(self.board, 1):
             self.ai_won = True
@@ -147,40 +165,40 @@ class MagDropFSM:
         self.state = "ai_move"
 
     def ai_move(self):
+        display("It's the", "maschine's turn!")
         left_switch, right_switch = read_limit_switches()
 
         if not left_switch:
             move_motor("left", 5000)
             time.sleep(0.1)
         
-        #activate electromagnet
-        time.sleep(0.1)
+        control_electromagnet(True)
+        time.sleep(0.4)
         move_gantry("mag", f"col{self.ai_col+1}")
         time.sleep(0.1)
-        #deactivate electromagnet
+        control_electromagnet(False)
         time.sleep(0.2)
-        move_gantry(f"col{self.ai_col+1}", "mag")
 
-        if self.ai_won or self.draw:
-            self.state = "game_end"
+        self.count = self.count + 1
+
+        if self.count >= 7:
+            self.state = "reloading"
+            self.count = 0
         else:
-            self.state = "human_move"
+            move_gantry(f"col{self.ai_col+1}", "mag")
+
+            if self.ai_won or self.draw:
+                self.state = "game_end"
+            else:
+                self.state = "human_move"
 
     def game_end(self):
         if self.human_won:
-            print("Congrats!")
-            print("You Won!")
+            display("Congrats! You Won", "Press to Restart!")
         elif self.ai_won:
-            print("The machine")
-            print("has won!")
+            display("The machine Won!", "Press to Restart!")
         elif self.draw:
-            print("It's a Draw!")
-            print("")
-        
-        time.sleep(10)
-
-        print("Button press")
-        print("for restart!")
+            display("It's a Draw!", "Press to Restart!")
 
         # Waiting for button press
         while True:
@@ -188,6 +206,15 @@ class MagDropFSM:
             if red_button or blue_button:
                 break
 
+        time.sleep(0.5) # Debounce
+        self.board = create_board()
+        self.level = 1
+        self.ai_col = None
+        self.human_col = None
+        self.draw = False
+        self.human_won = False
+        self.ai_won = False
+        self.ingame = False
         self.state = "idle"  # Transition
 
 if __name__ == "__main__":

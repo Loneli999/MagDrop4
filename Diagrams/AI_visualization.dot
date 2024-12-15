@@ -1,0 +1,65 @@
+digraph AlphaBetaPruning {
+    rankdir=TB; // Top-to-bottom layout
+    node [shape=box];
+
+    // Root Node
+    root [label="Root Node\n(Current Board State)\nAlpha = -∞, Beta = +∞"];
+
+    // Level 1 (AI Moves)
+    ai_move_1 [label="AI Move 1\nAlpha = -∞, Beta = +∞"];
+    ai_move_2 [label="AI Move 2\nAlpha = -∞, Beta = +∞"];
+    ai_move_3 [label="AI Move 3\nAlpha = -∞, Beta = +∞"];
+
+    // Connections from Root
+    root -> ai_move_1;
+    root -> ai_move_2;
+    root -> ai_move_3;
+
+    // Level 2 (Opponent Moves for AI Move 1)
+    opp_move_1a [label="Opponent Move 1a\nAlpha = -∞, Beta = +∞"];
+    opp_move_1b [label="Opponent Move 1b\nAlpha = -∞, Beta = +∞"];
+    opp_move_1c [label="Opponent Move 1c\nAlpha = -∞, Beta = +∞ (PRUNED)"];
+
+    // Connections for AI Move 1
+    ai_move_1 -> opp_move_1a;
+    ai_move_1 -> opp_move_1b;
+    ai_move_1 -> opp_move_1c [style=dashed, label="Pruned"];
+
+    // Level 3 (AI Evaluates Moves for Opponent Move 1a)
+    eval_1a1 [label="Evaluate: +3"];
+    eval_1a2 [label="Evaluate: -2"];
+    eval_1a3 [label="Evaluate: +1"];
+
+    // Connections for Opponent Move 1a
+    opp_move_1a -> eval_1a1;
+    opp_move_1a -> eval_1a2;
+    opp_move_1a -> eval_1a3;
+
+    // Level 3 (AI Evaluates Moves for Opponent Move 1b)
+    eval_1b1 [label="Evaluate: -1"];
+    eval_1b2 [label="Evaluate: -4"];
+    eval_1b3 [label="Evaluate: +5 (PRUNED)"];
+
+    // Connections for Opponent Move 1b
+    opp_move_1b -> eval_1b1;
+    opp_move_1b -> eval_1b2;
+    opp_move_1b -> eval_1b3 [style=dashed, label="Pruned"];
+
+    // Pruning Explanation
+    opp_move_1c [tooltip="Branch skipped due to Alpha >= Beta"];
+
+    // Level 2 for AI Move 2 and 3
+    opp_move_2a [label="Opponent Move 2a\n(PRUNED)"];
+    opp_move_3a [label="Opponent Move 3a\n(PRUNED)"];
+
+    ai_move_2 -> opp_move_2a [style=dashed, label="Pruned"];
+    ai_move_3 -> opp_move_3a [style=dashed, label="Pruned"];
+
+    // Legends
+    subgraph cluster_legend {
+        label = "Legend";
+        node [shape=plaintext];
+        legend1 [label="Dashed Line: Pruned Branch"];
+        legend2 [label="Solid Line: Evaluated Branch"];
+    }
+}

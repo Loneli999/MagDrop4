@@ -49,7 +49,7 @@ def evaluate_window(window, piece):
     score = 0
 
     if window.count(piece) == 4:
-        score += 100  # Winning
+        score += 100000
     elif window.count(piece) == 3 and window.count(0) == 1:
         score += 10  # Strong threat
     elif window.count(piece) == 2 and window.count(0) == 2:
@@ -64,7 +64,7 @@ def score_position(board, piece):
     """Scores the entire board for a given piece."""
     score = 0
     center_array = [board[row, COLS // 2] for row in range(ROWS)]
-    score += center_array.count(piece) * 6  # Encourage central play
+    score += center_array.count(piece) * 2  # Encourage central play
 
     # Horizontal
     for row in range(ROWS):
@@ -96,7 +96,6 @@ def get_valid_moves(board):
     return [col for col in range(COLS) if is_valid_move(board, col)]
 
 def is_terminal_node(board):
-    """Checks if the game has ended."""
     return is_winning_move(board, 1) or is_winning_move(board, 2) or len(get_valid_moves(board)) == 0
 
 def alpha_beta_pruning(board, depth, alpha, beta, maximizing_player):
@@ -105,7 +104,7 @@ def alpha_beta_pruning(board, depth, alpha, beta, maximizing_player):
     is_terminal = is_terminal_node(board)
 
     if depth == 0 or is_terminal:
-        operations_count += 1  # Increment for terminal evaluations
+        operations_count += 1
         if is_terminal:
             if is_winning_move(board, 1):
                 return None, 100000

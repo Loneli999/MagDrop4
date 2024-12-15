@@ -1,4 +1,4 @@
-from stepper_motor import move_motor
+from modules.stepper_motor import move_motor
 
 # Define positions and step distances
 POSITIONS = {
@@ -43,9 +43,8 @@ def move_gantry(current_position, desired_position):
     
     # Assure it hits the limit switch when going back to magazine
     if desired_position == "mag":
-        steps = steps + 100
+        steps = steps + 5000
 
     # Move the gantry
-    print(f"Moving from {current_position} to {desired_position} ({steps} steps, {direction}).")
     move_motor(direction, steps)
     print(f"Gantry moved to {desired_position}.")

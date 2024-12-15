@@ -50,9 +50,45 @@ digraph MagDropFSM {
             </table>
         >
     ];
-    GameAI [label="Game AI"];
-    AIMove [label="AI Move"];
-    GameEnd [label="Game End"];
+    GameAI [
+        shape=rectangle
+        style=rounded
+        label=<
+            <table border="0" cellborder="0" cellspacing="0">
+                <tr><td align="center"><font point-size="20"><b>Game AI</b></font></td></tr>
+                <tr><td align="left">ai_col = get_best_move(board, depth=level)</td></tr>
+                <tr><td align="left">update_board(board)</td></tr>
+                <tr><td align="left">human_col = read_ir_sensors()</td></tr>
+                <tr><td align="left">update_board()</td></tr>
+            </table>
+        >
+    ];
+    AIMove [
+        shape=rectangle
+        style=rounded
+        label=<
+            <table border="0" cellborder="0" cellspacing="0">
+                <tr><td align="center"><font point-size="20"><b>AI Move</b></font></td></tr>
+                <tr><td align="left">display_line1 = "It's the"</td></tr>
+                <tr><td align="left">display_line2 = "maschine's turn!"</td></tr>
+                <tr><td align="left">activate_electromagnet()</td></tr>
+                <tr><td align="left">move_gantry("mag", f"col{ai_col}")</td></tr>
+                <tr><td align="left">deactivate_electromagnet()</td></tr>
+                <tr><td align="left">move_gantry(f"col{ai_col}", "mag")</td></tr>
+            </table>
+       >
+    ];
+    GameEnd [
+        shape=rectangle
+        style=rounded
+        label=<
+            <table border="0" cellborder="0" cellspacing="0">
+                <tr><td align="center"><font point-size="20"><b>Game End</b></font></td></tr>
+                <tr><td align="left">display_line1 = "The winner is"</td></tr>
+                <tr><td align="left">display_line2 = f"{winner}"</td></tr>
+            </table>
+       >
+    ];
 
     # Transitions
     Idle -> DifficultySelection [label="red_button/"];
@@ -63,14 +99,13 @@ digraph MagDropFSM {
     DifficultySelection -> HumanMove [label="blue_button/"];
     DifficultySelection -> DifficultySelection [label="red_button / level:=level+1"];
 
-    HumanMove -> GameAI [label="is_valid_move()/"];
+    HumanMove -> GameAI [label="is_valid_move()/"; style=dashed];
     HumanMove -> GameEnd [label="is_winning_move(board)/"];
 
-    GameAI -> AIMove [label="AI Move Selected/"];
-    GameAI -> GameEnd [label="AI Wins or Draw/"];
+    GameAI -> AIMove [label="complete/"];
 
-    AIMove -> HumanMove [label="AI Move Complete/"];
-    AIMove -> GameEnd [label="AI Wins or Draw/"];
+    AIMove -> HumanMove [label="complete/"; style=dashed];
+    AIMove -> GameEnd [label="is_winning_move(self.board) || len(get_valid_moves(board)) == 0/"; constraint=false]; 
 
-    GameEnd -> Idle [label="Button Press/"];
+    GameEnd -> Idle [label="red_button || blue_button/"];
 }
