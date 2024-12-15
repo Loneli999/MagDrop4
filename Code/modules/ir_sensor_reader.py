@@ -4,21 +4,11 @@ import RPi.GPIO as GPIO
 IR_PINS = [26, 17, 27, 22, 23, 24, 4]
 
 # GPIO setup
-GPIO.setmode(GPIO.BCM)  # Use BCM numbering
+GPIO.setmode(GPIO.BCM)
 for pin in IR_PINS:
-    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Enable pull-up resistor
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def read_ir_sensors(ignore_sensors=[]):
-    """
-    Reads the states of all 7 IR sensors and returns the triggered sensor number,
-    ignoring specified sensors. If more than one valid sensor is triggered, returns None.
-    
-    Parameters:
-        ignore_sensors (list): List of sensor numbers (1-based) to ignore.
-        
-    Returns:
-        int or None: The number of the triggered IR sensor (1-7), or None if no/invalid sensors are triggered.
-    """
     triggered_sensors = []
 
     for index, pin in enumerate(IR_PINS):

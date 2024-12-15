@@ -16,21 +16,9 @@ GPIO.setup(DIR_PIN, GPIO.OUT)
 GPIO.setup(ENABLE_PIN, GPIO.OUT)
 
 def motor_off():
-    """
-    Ensures the motor is turned off by setting ENABLE_PIN to HIGH.
-    """
-    GPIO.output(ENABLE_PIN, GPIO.HIGH)  # Disable the motor driver
-    print("Motor is now OFF.")
+    GPIO.output(ENABLE_PIN, GPIO.HIGH)
 
-# Function to move the motor
 def move_motor(direction, steps):
-    """
-    Move the gantry cart in the specified direction for a given number of steps.
-    
-    Parameters:
-        direction (str): 'left' or 'right'
-        steps (int): Number of steps to move
-    """
     GPIO.output(ENABLE_PIN, GPIO.LOW)  # Enable the motor driver
 
     # Set direction
@@ -47,10 +35,8 @@ def move_motor(direction, steps):
         # Check limit switches
         left_switch, right_switch = read_limit_switches()
         if direction == 'left' and left_switch:
-            #print("Limit switch LEFT triggered! Stopping.")
             break
         elif direction == 'right' and right_switch:
-            #print("Limit switch RIGHT triggered! Stopping.")
             break
 
         # Generate step pulse

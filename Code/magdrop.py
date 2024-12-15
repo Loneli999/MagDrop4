@@ -8,6 +8,7 @@ from modules.electromagnet import control_electromagnet
 from modules.lcd_display import display
 from modules.game_ai import (
     create_board,
+    print_board,
     drop_piece,
     is_valid_move,
     get_full_columns,
@@ -149,13 +150,12 @@ class MagDropFSM:
 
     def game_ai(self):
         self.ai_col = get_best_move(self.board, depth=self.level)
-        print(self.ai_col)
 
         if self.ai_col is not None:
             row = get_next_open_row(self.board, self.ai_col)
             drop_piece(self.board, row, self.ai_col, 1)
         
-        print(self.board)
+        print_board(self.board)
 
         if is_winning_move(self.board, 1):
             self.ai_won = True

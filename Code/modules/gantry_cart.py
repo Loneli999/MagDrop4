@@ -15,13 +15,6 @@ POSITIONS = {
 
 # Gantry movement function
 def move_gantry(current_position, desired_position):
-    """
-    Move the gantry from the current position to the desired position.
-    
-    Parameters:
-        current_position (str): Current position name (e.g., "mag", "col1", etc.)
-        desired_position (str): Desired position name (e.g., "reload", "col3", etc.)
-    """
     if current_position not in POSITIONS or desired_position not in POSITIONS:
         print("Invalid position. Use predefined positions: " + ", ".join(POSITIONS.keys()))
     
@@ -45,6 +38,4 @@ def move_gantry(current_position, desired_position):
     if desired_position == "mag":
         steps = steps + 5000
 
-    # Move the gantry
     move_motor(direction, steps)
-    print(f"Gantry moved to {desired_position}.")

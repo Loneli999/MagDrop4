@@ -1,10 +1,29 @@
 import numpy as np
+from random import shuffle
 
 ROWS = 6
 COLS = 7
 
 def create_board():
     return np.zeros((ROWS, COLS), dtype=int)
+
+def print_board(board):
+    symbols = {
+        0: ' ', 
+        1: '○',  # AI (Black pieces)
+        2: '●',  # Human (White pieces)
+    }
+
+    print("┌" + ("───┬" * 6) + "───┐")
+
+    for i, row in enumerate(board):
+        row_content = "│".join(f"{symbols[cell]:^3}" for cell in row)
+        print(f"│{row_content}│")
+        if i < len(board) - 1:
+            print("├" + ("───┼" * 6) + "───┤")
+    
+    print("└" + ("───┴" * 6) + "───┘")
+    print("  1   2   3   4   5   6   7")
 
 def is_valid_move(board, col):
     return 0 <= col < COLS and board[0, col] == 0
@@ -98,59 +117,119 @@ def get_valid_moves(board):
 def is_terminal_node(board):
     return is_winning_move(board, 1) or is_winning_move(board, 2) or len(get_valid_moves(board)) == 0
 
-def alpha_beta_pruning(board, depth, alpha, beta, maximizing_player):
+def MiniMaxAlphaBeta(board, depth):
     global operations_count
+    operations_count = 0  # Reset the operations count each time this is called
+    
     valid_moves = get_valid_moves(board)
-    is_terminal = is_terminal_node(board)
+    # If no valid moves are available, just return None
+    if len(valid_moves) == 0:
+        return None
+    
+    # Shuffle the valid moves for variety
+    shuffle(valid_moves)
 
-    if depth == 0 or is_terminal:
+    alpha = -float('inf')
+    beta = float('inf')
+    best_col = valid_moves[0]
+    best_score = -float('inf')
+
+    # Explore all valid columns to find the best (max) score
+    for col in valid_moves:
+        row = get_next_open_row(board, col)
+        temp_board = board.copy()
+        drop_piece(temp_board, row, col, 1)  # piece=1 for AI
         operations_count += 1
-        if is_terminal:
-            if is_winning_move(board, 1):
-                return None, 100000
-            elif is_winning_move(board, 2):
-                return None, -100000
-            else:
-                return None, 0
-        else:
-            return None, score_position(board, 1)
 
-    if maximizing_player:
-        value = -float('inf')
-        best_col = np.random.choice(valid_moves)
-        for col in valid_moves:
-            row = get_next_open_row(board, col)
-            temp_board = board.copy()
-            drop_piece(temp_board, row, col, 1)
-            operations_count += 1  # Increment for each branch evaluation
-            new_score = alpha_beta_pruning(temp_board, depth - 1, alpha, beta, False)[1]
-            if new_score > value:
-                value = new_score
-                best_col = col
-            alpha = max(alpha, value)
-            if alpha >= beta:
-                break
-        return best_col, value
-    else:
-        value = float('inf')
-        best_col = np.random.choice(valid_moves)
-        for col in valid_moves:
-            row = get_next_open_row(board, col)
-            temp_board = board.copy()
-            drop_piece(temp_board, row, col, 2)
-            operations_count += 1  # Increment for each branch evaluation
-            new_score = alpha_beta_pruning(temp_board, depth - 1, alpha, beta, True)[1]
-            if new_score < value:
-                value = new_score
-                best_col = col
-            beta = min(beta, value)
-            if alpha >= beta:
-                break
-        return best_col, value
+        score = minimizeBeta(temp_board, depth - 1, alpha, beta)
+        if score > best_score:
+            best_score = score
+            best_col = col
+        alpha = max(alpha, best_score)
+        
+        # Early pruning
+        if alpha >= beta:
+            break
+
+    return best_col
+
+
+def minimizeBeta(board, depth, alpha, beta):
+    global operations_count
+    
+    # Terminal or depth limit check
+    if depth == 0 or is_terminal_node(board):
+        operations_count += 1
+        if is_terminal_node(board):
+            # Winning/losing/draw scoring
+            if is_winning_move(board, 1):
+                return 100000
+            elif is_winning_move(board, 2):
+                return -100000
+            else:
+                return 0
+        else:
+            return score_position(board, 1)  # Evaluate from AI's perspective
+
+    value = float('inf')
+    valid_moves = get_valid_moves(board)
+
+    for col in valid_moves:
+        row = get_next_open_row(board, col)
+        temp_board = board.copy()
+        drop_piece(temp_board, row, col, 2)  # piece=2 for Human
+        operations_count += 1
+
+        new_score = maximizeAlpha(temp_board, depth - 1, alpha, beta)
+        value = min(value, new_score)
+        beta = min(beta, value)
+
+        # Early pruning
+        if alpha >= beta:
+            break
+
+    return value
+
+
+def maximizeAlpha(board, depth, alpha, beta):
+    global operations_count
+
+    # Terminal or depth limit check
+    if depth == 0 or is_terminal_node(board):
+        operations_count += 1
+        if is_terminal_node(board):
+            # Winning/losing/draw scoring
+            if is_winning_move(board, 1):
+                return 100000
+            elif is_winning_move(board, 2):
+                return -100000
+            else:
+                return 0
+        else:
+            return score_position(board, 1)
+
+    value = -float('inf')
+    valid_moves = get_valid_moves(board)
+
+    for col in valid_moves:
+        row = get_next_open_row(board, col)
+        temp_board = board.copy()
+        drop_piece(temp_board, row, col, 1)  # piece=1 for AI
+        operations_count += 1
+
+        new_score = minimizeBeta(temp_board, depth - 1, alpha, beta)
+        value = max(value, new_score)
+        alpha = max(alpha, value)
+
+        # Early pruning
+        if alpha >= beta:
+            break
+
+    return value
+
 
 def get_best_move(board, depth=4):
-    """Gets the best move for Player 1 using Alpha-Beta Pruning."""
     global operations_count
-    operations_count = 0  # Reset operations count
-    col, _ = alpha_beta_pruning(board, depth, -float('inf'), float('inf'), True)
-    return col
+    operations_count = 0
+    best_col = MiniMaxAlphaBeta(board, depth)
+    return best_col
