@@ -4,6 +4,8 @@ from random import shuffle
 ROWS = 6
 COLS = 7
 
+operations_count = 0
+
 def create_board():
     return np.zeros((ROWS, COLS), dtype=int)
 
@@ -68,22 +70,24 @@ def evaluate_window(window, piece):
     score = 0
 
     if window.count(piece) == 4:
-        score += 100000
+        score += 100
     elif window.count(piece) == 3 and window.count(0) == 1:
-        score += 10  # Strong threat
+        score += 10
     elif window.count(piece) == 2 and window.count(0) == 2:
-        score += 5   # Potential threat
+        score += 5
 
-    if window.count(opponent_piece) == 3 and window.count(0) == 1:
-        score -= 15  # Block opponent's strong threat
+    if window.count(opponent_piece) == 4:
+        score -= 100
+    elif window.count(opponent_piece) == 3 and window.count(0) == 1:
+        score -= 8
 
     return score
 
 def score_position(board, piece):
     """Scores the entire board for a given piece."""
     score = 0
-    center_array = [board[row, COLS // 2] for row in range(ROWS)]
-    score += center_array.count(piece) * 2  # Encourage central play
+    center_array = [int(i) for i in list(board[:,COLS//2])]
+    score += center_array.count(piece) * 6  # Encourage central play
 
     # Horizontal
     for row in range(ROWS):
@@ -163,9 +167,9 @@ def minimizeBeta(board, depth, alpha, beta):
         if is_terminal_node(board):
             # Winning/losing/draw scoring
             if is_winning_move(board, 1):
-                return 100000
+                return 100000 + depth * 1000
             elif is_winning_move(board, 2):
-                return -100000
+                return -100000 - depth * 1000
             else:
                 return 0
         else:
@@ -200,9 +204,9 @@ def maximizeAlpha(board, depth, alpha, beta):
         if is_terminal_node(board):
             # Winning/losing/draw scoring
             if is_winning_move(board, 1):
-                return 100000
+                return 100000 + depth * 1000
             elif is_winning_move(board, 2):
-                return -100000
+                return -100000 - depth * 1000
             else:
                 return 0
         else:
