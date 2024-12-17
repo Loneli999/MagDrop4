@@ -4,8 +4,8 @@ from modules.limit_switch_reader import read_limit_switches
 
 # GPIO pin configuration
 STEP_PIN = 16       # Step control
-DIR_PIN = 12        # Direction control
-ENABLE_PIN = 21     # Enable motor
+DIR_PIN = 21        # Direction control
+ENABLE_PIN = 20     # Enable motor
 
 DELAY = 0.0001  # Delay between steps
 

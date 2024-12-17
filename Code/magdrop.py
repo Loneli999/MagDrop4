@@ -24,7 +24,8 @@ class MagDropFSM:
     def __init__(self):
         self.state = "idle"  # Initial state
         self.board = create_board()
-        self.level = 1
+        self.level = 3
+        self.difficulty = 0
         self.ai_col = None
         self.human_col = None
         self.draw = False
@@ -108,14 +109,18 @@ class MagDropFSM:
 
         display("Press Red:Change", "Press Blue:Start")
 
+        difficulty_levels = ["Medium", "Hard", "Unbtbl"]
+
         while True:
             red_button, blue_button = read_buttons()
             if red_button:
-                self.level = self.level + 1
-                if self.level > 4:
-                    self.level = 1
+                self.difficulty = self.difficulty + 1
+                if self.difficulty > 3:
+                    self.difficulty = 1
 
-                display("Selected Diff:", f"Level: {self.level}")
+                display("Selected Diff:", f"Level: {difficulty_levels[self.difficulty - 1]}")
+
+                self.level = self.difficulty + 2
 
                 time.sleep(0.5) # Debounce
 
@@ -145,8 +150,8 @@ class MagDropFSM:
         if is_winning_move(self.board, 2):
             self.human_won = True
             self.state = "game_end"
-
-        self.state = "game_ai"
+        else:
+            self.state = "game_ai"
 
     def game_ai(self):
         self.ai_col = get_best_move(self.board, depth=self.level)
@@ -181,20 +186,18 @@ class MagDropFSM:
 
         self.count = self.count + 1
 
-        if self.count >= 7:
+        if self.ai_won or self.draw:
+            self.state = "game_end"
+        elif self.count >= 7:
             self.state = "reloading"
             self.count = 0
         else:
             move_gantry(f"col{self.ai_col+1}", "mag")
-
-            if self.ai_won or self.draw:
-                self.state = "game_end"
-            else:
-                self.state = "human_move"
-
+            self.state = "human_move"
+    
     def game_end(self):
         if self.human_won:
-            display("Congrats! You Won", "Press to Restart!")
+            display("Congrats You Won", "Press to Restart!")
         elif self.ai_won:
             display("The machine Won!", "Press to Restart!")
         elif self.draw:

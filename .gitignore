@@ -1,0 +1,24 @@
+# Ignore build directories
+/build/
+/dist/
+
+# Ignore mp4
+*.mp4
+
+# Ignore temporary files
+*.tmp
+*.log
+*.bak
+
+# Ignore CAD backup files
+*.~*
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore Python virtual environments
+__pycache__/
+*.pyc
+.env/
+venv/

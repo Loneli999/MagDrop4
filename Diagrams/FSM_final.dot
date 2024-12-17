@@ -1,5 +1,7 @@
 digraph MagDropFSM {
-    node [shape=rectangle style=rounded];
+    node [shape=rectangle style=rounded width=2.5];
+    nodesep = 0.7;
+    ranksep=0.2;
 
     Idle [
         shape=rectangle
@@ -30,7 +32,7 @@ digraph MagDropFSM {
         label=<
             <table border="0" cellborder="0" cellspacing="0">
                 <tr><td align="center"><font point-size="20"><b>Difficulty Selection</b></font></td></tr>
-                <tr><td align="left">if level &gt; 4:</td></tr>
+                <tr><td align="left">if level &gt; 3:</td></tr>
                 <tr><td align="left">    level = 1</td></tr>
                 <tr><td align="left">display_line1 = "Selected Diff:"</td></tr>
                 <tr><td align="left">display_line2 = "Level: {level}"</td></tr>
@@ -56,7 +58,7 @@ digraph MagDropFSM {
         label=<
             <table border="0" cellborder="0" cellspacing="0">
                 <tr><td align="center"><font point-size="20"><b>Game AI</b></font></td></tr>
-                <tr><td align="left">ai_col = get_best_move(board, depth=level)</td></tr>
+                <tr><td align="left">ai_col = get_best_move(board, depth=level+2)</td></tr>
                 <tr><td align="left">update_board(board)</td></tr>
                 <tr><td align="left">human_col = read_ir_sensors()</td></tr>
                 <tr><td align="left">update_board()</td></tr>
